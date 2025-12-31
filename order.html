@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>تتبع الطلب</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  font-family: Cairo, sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #111;
+  border-radius: 16px;
+  padding: 25px;
+  border: 1px solid #333;
+}
+
+h1 {
+  text-align: center;
+  color: #ff0055;
+}
+
+.input-box {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+button {
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-check {
+  background: #ff0055;
+  color: #fff;
+}
+
+.card {
+  margin-top: 25px;
+  background: #181818;
+  border-radius: 14px;
+  padding: 20px;
+  display: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #222;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.paid { background:#2ecc71; color:#000; }
+.pending { background:#f1c40f; color:#000; }
+.cancelled { background:#e74c3c; color:#fff; }
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pay {
+  background: #00c853;
+  color: #000;
+}
+
+.whatsapp {
+  background: #25D366;
+  color: #000;
+}
+
+.call {
+  background: #007bff;
+  color: #fff;
+}
+
+.error {
+  margin-top: 20px;
+  color: #ff5555;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🔎 تتبع الطلب</h1>
+
+  <div class="input-box">
+    <input id="orderInput" placeholder="أدخل رقم الطلب">
+    <button class="btn-check" onclick="checkOrder()">بحث</button>
+  </div>
+
+  <div id="error" class="error"></div>
+
+  <div id="orderCard" class="card">
+    <div class="row"><b>رقم الطلب:</b><span id="o_id"></span></div>
+    <div class="row"><b>التاريخ:</b><span id="o_date"></span></div>
+    <div class="row"><b>الاسم:</b><span id="o_name"></span></div>
+    <div class="row"><b>الهاتف:</b><span id="o_phone"></span></div>
+    <div class="row"><b>الإجمالي:</b><span id="o_total"></span></div>
+    <div class="row"><b>الحالة:</b><span id="o_status"></span></div>
+
+    <div class="actions" id="actions"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwXXXXXXX/exec"; // ضع رابطك هنا
+
+function checkOrder() {
+  const id = document.getElementById("orderInput").value.trim();
+  if (!id) return;
+
+  fetch(`${API_URL}?action=getOrder&orderId=${encodeURIComponent(id)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) {
+        showError("❌ لم يتم العثور على الطلب");
+        return;
+      }
+
+      const o = data.order;
+      document.getElementById("error").innerText = "";
+      document.getElementById("orderCard").style.display = "block";
+
+      document.getElementById("o_id").innerText = o.orderId;
+      document.getElementById("o_date").innerText = o.date;
+      document.getElementById("o_name").innerText = o.customerName;
+      document.getElementById("o_phone").innerText = o.customerPhone;
+      document.getElementById("o_total").innerText = o.total + " AED";
+
+      const statusEl = document.getElementById("o_status");
+      statusEl.innerHTML = o.status;
+
+      if (o.status.includes("مدفوع")) {
+        statusEl.className = "status paid";
+      } else {
+        statusEl.className = "status pending";
+      }
+
+      renderActions(o);
+    })
+    .catch(() => showError("خطأ في الاتصال بالخادم"));
+}
+
+function renderActions(order) {
+  const box = document.getElementById("actions");
+  box.innerHTML = "";
+
+  if (!order.status.includes("مدفوع")) {
+    const payBtn = document.createElement("button");
+    payBtn.className = "action-btn pay";
+    payBtn.innerText = "💳 إتمام الدفع";
+    payBtn.onclick = () => {
+      window.location.href = `${API_URL}?action=payment&orderId=${order.orderId}&amount=${order.total}`;
+    };
+    box.appendChild(payBtn);
+  }
+
+  const wa = document.createElement("button");
+  wa.className = "action-btn whatsapp";
+  wa.innerText = "💬 واتساب";
+  wa.onclick = () => {
+    window.open(`https://wa.me/971XXXXXXXX?text=مرحبا، بخصوص الطلب رقم ${order.orderId}`, "_blank");
+  };
+
+  const call = document.createElement("button");
+  call.className = "action-btn call";
+  call.innerText = "📞 اتصال";
+  call.onclick = () => window.location.href = "tel:+971XXXXXXXX";
+
+  box.appendChild(wa);
+  box.appendChild(call);
+}
+
+function showError(msg) {
+  document.getElementById("error").innerText = msg;
+  document.getElementById("orderCard").style.display = "none";
+}
+</script>
+
+</body>
+</html>
