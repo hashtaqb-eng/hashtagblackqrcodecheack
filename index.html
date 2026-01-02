@@ -148,34 +148,41 @@ button {
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxhMvHXR9BwB0Ye4vrhVZURhlJMqLq4J5im65PUBEV3FC-cy7dLBZixyCQLJlEd4rUu/exec";  
+const API_URL = "https://script.google.com/macros/s/AKfycby8VBesl-O3AuR694VCjQfaEzBHzT3oFMVqguWwnHbXYBxPS02WcxswjwB5zFv9X5Nayg/exec";  
 
 function checkOrder() {
   const id = document.getElementById("orderInput").value.trim();
-  if (!id) return;
+  if (!id) {
+    showError("يرجى إدخال رقم الطلب");
+    return;
+  }
 
   fetch(`${API_URL}?action=getOrder&orderId=${encodeURIComponent(id)}`)
-    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) throw new Error("NETWORK");
+      return res.json();
+    })
     .then(data => {
-      if (!data.success) {
+      if (!data || data.success !== true || !data.order) {
         showError("❌ لم يتم العثور على الطلب");
         return;
       }
 
       const o = data.order;
+
       document.getElementById("error").innerText = "";
       document.getElementById("orderCard").style.display = "block";
 
       document.getElementById("o_id").innerText = o.orderId;
-      document.getElementById("o_date").innerText = o.date;
-      document.getElementById("o_name").innerText = o.customerName;
-      document.getElementById("o_phone").innerText = o.customerPhone;
-      document.getElementById("o_total").innerText = o.total + " AED";
+      document.getElementById("o_date").innerText = o.date || "-";
+      document.getElementById("o_name").innerText = o.customerName || "-";
+      document.getElementById("o_phone").innerText = o.customerPhone || "-";
+      document.getElementById("o_total").innerText = (o.total || 0) + " AED";
 
       const statusEl = document.getElementById("o_status");
-      statusEl.innerHTML = o.status;
+      statusEl.textContent = o.status || "غير معروف";
 
-      if (o.status.includes("مدفوع")) {
+      if ((o.status || "").includes("مدفوع")) {
         statusEl.className = "status paid";
       } else {
         statusEl.className = "status pending";
@@ -183,7 +190,9 @@ function checkOrder() {
 
       renderActions(o);
     })
-    .catch(() => showError("خطأ في الاتصال بالخادم"));
+    .catch(() => {
+      showError("⚠️ تعذر الاتصال بالخادم");
+    });
 }
 
 function renderActions(order) {
@@ -224,4 +233,5 @@ function showError(msg) {
 
 </body>
 </html>
+
 
