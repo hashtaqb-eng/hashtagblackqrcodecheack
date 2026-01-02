@@ -229,9 +229,21 @@ function showError(msg) {
   document.getElementById("error").innerText = msg;
   document.getElementById("orderCard").style.display = "none";
 }
+  // قراءة رقم الطلب تلقائياً من الرابط (QR)
+window.onload = function () {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("orderId");
+
+  if (orderId) {
+    document.getElementById("orderInput").value = orderId;
+    checkOrder();
+  }
+};
+
 </script>
 
 </body>
 </html>
+
 
 
