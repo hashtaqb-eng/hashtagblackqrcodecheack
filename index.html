@@ -251,9 +251,10 @@ function openAdmin() {
   // PIN ثابت
   if (pin === "1234") {
     const orderId = document.getElementById("o_id").innerText;
-   window.location.href =
-  "/admin/update-status.html?orderId=" + encodeURIComponent(orderId) + "&pin=" + pin;
-
+  window.location.href =
+  "https://hashtaqb-eng.github.io/hashtagblackqrcodecheack/update-status.html"
+  + "?orderId=" + encodeURIComponent(orderId)
+  + "&pin=" + pin;
   } else {
     alert("❌ PIN غير صحيح");
   }
@@ -262,3 +263,4 @@ function openAdmin() {
 
 </body>
 </html>
+
