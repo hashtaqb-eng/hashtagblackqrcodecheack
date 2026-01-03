@@ -144,6 +144,10 @@ button {
     <div class="row"><b>الحالة:</b><span id="o_status"></span></div>
 
     <div class="actions" id="actions"></div>
+   <button class="action-btn" style="background:#555;color:#fff" onclick="openAdmin()">
+🔐 دخول موظف
+</button>
+
   </div>
 </div>
 
@@ -240,11 +244,24 @@ window.onload = function () {
     checkOrder();
   }
 };
+function openAdmin() {
+  const pin = prompt("أدخل PIN الموظف:");
+  if (!pin) return;
 
+  // PIN ثابت
+  if (pin === "1234") {
+    const orderId = document.getElementById("o_id").innerText;
+    window.location.href =
+      "update-status.html?orderId=" + encodeURIComponent(orderId) + "&pin=" + pin;
+  } else {
+    alert("❌ PIN غير صحيح");
+  }
+}
 </script>
 
 </body>
 </html>
+
 
 
 
