@@ -56,7 +56,6 @@ button {
 
 <div class="box">
   <h2>تحديث حالة الطلب</h2>
-
   <div id="orderInfo"></div>
 
   <select id="status">
@@ -68,7 +67,6 @@ button {
   </select>
 
   <button onclick="updateStatus()">حفظ الحالة</button>
-
   <div class="msg" id="msg"></div>
 </div>
 
@@ -77,6 +75,14 @@ const API = "https://script.google.com/macros/s/AKfycby8VBesl-O3AuR694VCjQfaEzBH
 
 const params = new URLSearchParams(window.location.search);
 const orderId = params.get("orderId");
+const pin = params.get("pin");
+
+// حماية PIN
+if (pin !== "1234") {
+  document.body.innerHTML =
+    "<h2 style='color:red;text-align:center'>🚫 دخول غير مصرح</h2>";
+  throw new Error("UNAUTHORIZED");
+}
 
 document.getElementById("orderInfo").innerText =
   orderId ? "رقم الطلب: " + orderId : "لا يوجد رقم طلب";
@@ -89,7 +95,7 @@ function updateStatus() {
     return;
   }
 
-  fetch(`${API}?action=updateStatus&orderId=${encodeURIComponent(orderId)}&status=${encodeURIComponent(status)}`)
+  fetch(`${API}?action=updateStatus&orderId=${encodeURIComponent(orderId)}&status=${encodeURIComponent(status)}&pin=${encodeURIComponent(pin)}`)
     .then(r => r.json())
     .then(data => {
       document.getElementById("msg").innerText =
