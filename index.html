@@ -203,9 +203,10 @@ function renderActions(order) {
     const payBtn = document.createElement("button");
     payBtn.className = "action-btn pay";
     payBtn.innerText = "💳 إتمام الدفع";
-    payBtn.onclick = () => {
-      window.location.href = `${API_URL}?action=payment&orderId=${order.orderId}&amount=${order.total}`;
-    };
+  payBtn.onclick = () => {
+  const uniqueRef = order.orderId + "-" + Date.now();
+  window.location.href = `${API_URL}?action=payment&orderId=${uniqueRef}&baseOrder=${order.orderId}&amount=${order.total}`;
+};
     box.appendChild(payBtn);
   }
 
@@ -244,6 +245,7 @@ window.onload = function () {
 
 </body>
 </html>
+
 
 
 
