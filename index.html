@@ -218,13 +218,16 @@ function renderActions(order) {
   wa.className = "action-btn whatsapp";
   wa.innerText = "💬 واتساب";
   wa.onclick = () => {
-    window.open(`https://wa.me/971XXXXXXXX?text=مرحبا، بخصوص الطلب رقم ${order.orderId}`, "_blank");
-  };
+window.open(
+  `https://wa.me/96877586062?text=مرحبا، بخصوص الطلب رقم ${order.orderId}`,
+  "_blank"
+);
+
 
   const call = document.createElement("button");
   call.className = "action-btn call";
   call.innerText = "📞 اتصال";
-  call.onclick = () => window.location.href = "tel:+971XXXXXXXX";
+  call.onclick = () => window.location.href = "tel:+96877586062";
 
   box.appendChild(wa);
   box.appendChild(call);
@@ -263,5 +266,6 @@ function openAdmin() {
 
 </body>
 </html>
+
 
 
