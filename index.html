@@ -143,11 +143,16 @@ button {
     <div class="row"><b>الإجمالي:</b><span id="o_total"></span></div>
     <div class="row"><b>الحالة:</b><span id="o_status"></span></div>
 
-    <div class="actions" id="actions"></div>
-   <button class="action-btn" style="background:#555;color:#fff" onclick="openAdmin()">
-🔐 دخول المسوؤل
-</button>
+  <div class="actions" id="actions"></div>
 
+<!-- زر المسؤول (مخفي) -->
+<button
+  id="adminBtn"
+  class="action-btn"
+  style="display:none;background:#444;color:#fff"
+  onclick="openAdmin()">
+🔐 دخول المسؤول
+</button>
   </div>
 </div>
 
@@ -272,6 +277,7 @@ function openAdmin() {
 
 </body>
 </html>
+
 
 
 
