@@ -78,12 +78,10 @@ button {
   padding: 6px 14px;
   border-radius: 20px;
   font-weight: bold;
-  display: inline-block;
 }
 
 .paid { background:#2ecc71; color:#000; }
 .pending { background:#f1c40f; color:#000; }
-.cancelled { background:#e74c3c; color:#fff; }
 
 .actions {
   margin-top: 20px;
@@ -95,27 +93,15 @@ button {
   flex: 1;
   padding: 14px;
   border-radius: 12px;
-  border: none;
   font-weight: bold;
   cursor: pointer;
 }
 
-.pay {
-  background: #00c853;
-  color: #000;
-}
+.pay { background:#00c853; color:#000; }
+.whatsapp { background:#25D366; color:#000; }
+.call { background:#007bff; color:#fff; }
 
-.whatsapp {
-  background: #25D366;
-  color: #000;
-}
-
-.call {
-  background: #007bff;
-  color: #fff;
-}
-
-.error {
+#error {
   margin-top: 20px;
   color: #ff5555;
   text-align: center;
@@ -126,14 +112,14 @@ button {
 <body>
 
 <div class="container">
-  <h1>🔎 تتبع الطلب</h1>
+  <h1 id="title">🔎 تتبع الطلب</h1>
 
   <div class="input-box">
     <input id="orderInput" placeholder="أدخل رقم الطلب">
     <button class="btn-check" onclick="checkOrder()">بحث</button>
   </div>
 
-  <div id="error" class="error"></div>
+  <div id="error"></div>
 
   <div id="orderCard" class="card">
     <div class="row"><b>رقم الطلب:</b><span id="o_id"></span></div>
@@ -141,101 +127,86 @@ button {
     <div class="row"><b>الاسم:</b><span id="o_name"></span></div>
     <div class="row"><b>الهاتف:</b><span id="o_phone"></span></div>
     <div class="row"><b>الإجمالي:</b><span id="o_total"></span></div>
-    <div class="row"><b>الحالة:</b><span id="o_status"></span></div>
+    <div class="row"><b>الحالة:</b><span id="o_status" class="status"></span></div>
 
-  <div class="actions" id="actions"></div>
+    <div class="actions" id="actions"></div>
 
-<!-- زر المسؤول (مخفي) -->
-<button
-  id="adminBtn"
-  class="action-btn"
-  style="display:none;background:#444;color:#fff"
-  onclick="openAdmin()">
-🔐 دخول المسؤول
-</button>
+    <!-- زر المسؤول (مخفي) -->
+    <button id="adminBtn"
+      class="action-btn"
+      style="display:none;background:#444;color:#fff"
+      onclick="openAdmin()">
+      🔐 دخول المسؤول
+    </button>
   </div>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";  
+const API_URL = "https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";
+
+// إظهار زر المسؤول بالضغط المطوّل على العنوان
+let pressTimer;
+const title = document.getElementById("title");
+
+title.addEventListener("mousedown", () => {
+  pressTimer = setTimeout(() => {
+    document.getElementById("adminBtn").style.display = "block";
+  }, 3000);
+});
+title.addEventListener("mouseup", () => clearTimeout(pressTimer));
+title.addEventListener("mouseleave", () => clearTimeout(pressTimer));
 
 function checkOrder() {
   const id = document.getElementById("orderInput").value.trim();
-  if (!id) {
-    showError("يرجى إدخال رقم الطلب");
-    return;
-  }
+  if (!id) return showError("يرجى إدخال رقم الطلب");
 
   fetch(`${API_URL}?action=getOrder&orderId=${encodeURIComponent(id)}`)
-    .then(res => {
-      if (!res.ok) throw new Error("NETWORK");
-      return res.json();
-    })
-    .then(data => {
-      if (!data || data.success !== true || !data.order) {
-        showError("❌ لم يتم العثور على الطلب");
-        return;
-      }
+    .then(r => r.json())
+    .then(d => {
+      if (!d.success) return showError("❌ لم يتم العثور على الطلب");
 
-      const o = data.order;
-
-      document.getElementById("error").innerText = "";
+      const o = d.order;
       document.getElementById("orderCard").style.display = "block";
+      document.getElementById("error").innerText = "";
 
-      document.getElementById("o_id").innerText = o.orderId;
-      document.getElementById("o_date").innerText = o.date || "-";
-      document.getElementById("o_name").innerText = o.customerName || "-";
-      document.getElementById("o_phone").innerText = o.customerPhone || "-";
-      document.getElementById("o_total").innerText = (o.total || 0) + " AED";
-
-      const statusEl = document.getElementById("o_status");
-      statusEl.textContent = o.status || "غير معروف";
-
-      if ((o.status || "").includes("مدفوع")) {
-        statusEl.className = "status paid";
-      } else {
-        statusEl.className = "status pending";
-      }
+      o_id.innerText = o.orderId;
+      o_date.innerText = o.date || "-";
+      o_name.innerText = o.customerName || "-";
+      o_phone.innerText = o.customerPhone || "-";
+      o_total.innerText = (o.total || 0) + " AED";
+      o_status.innerText = o.status || "-";
+      o_status.className = "status " + (o.status.includes("مدفوع") ? "paid" : "pending");
 
       renderActions(o);
     })
-    .catch(() => {
-      showError("⚠️ تعذر الاتصال بالخادم");
-    });
+    .catch(() => showError("⚠️ خطأ في الاتصال"));
 }
 
 function renderActions(order) {
   const box = document.getElementById("actions");
   box.innerHTML = "";
 
-  // زر الدفع
   if (!order.status.includes("مدفوع")) {
-    const payBtn = document.createElement("button");
-    payBtn.className = "action-btn pay";
-    payBtn.innerText = "💳 إتمام الدفع";
-    payBtn.onclick = () => {
-      const uniqueRef = order.orderId + "-" + Date.now();
+    const pay = document.createElement("button");
+    pay.className = "action-btn pay";
+    pay.innerText = "💳 إتمام الدفع";
+    pay.onclick = () => {
+      const ref = order.orderId + "-" + Date.now();
       window.location.href =
-        `${API_URL}?action=payment&orderId=${uniqueRef}&baseOrder=${order.orderId}&amount=${order.total}`;
+        `${API_URL}?action=payment&orderId=${ref}&baseOrder=${order.orderId}&amount=${order.total}`;
     };
-    box.appendChild(payBtn);
+    box.appendChild(pay);
   }
 
-  // زر واتساب
   const wa = document.createElement("button");
   wa.className = "action-btn whatsapp";
   wa.innerText = "💬 واتساب";
   wa.onclick = () => {
-    const phone = "96877586062";
-    const message = `مرحبا، بخصوص الطلب رقم ${order.orderId}`;
-    window.open(
-      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
+    const msg = `مرحبا، بخصوص الطلب رقم ${order.orderId}`;
+    window.open(`https://wa.me/96877586062?text=${encodeURIComponent(msg)}`, "_blank");
   };
   box.appendChild(wa);
 
-  // زر اتصال
   const call = document.createElement("button");
   call.className = "action-btn call";
   call.innerText = "📞 اتصال";
@@ -243,42 +214,28 @@ function renderActions(order) {
   box.appendChild(call);
 }
 
+function openAdmin() {
+  const pin = prompt("أدخل PIN المسؤول:");
+  if (!pin) return;
+
+  fetch(`${API_URL}?action=verifyPin&pin=${encodeURIComponent(pin)}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        window.location.href =
+          "https://hashtaqb-eng.github.io/hashtagblackqrcodecheack/update-status.html"
+          + "?orderId=" + encodeURIComponent(o_id.innerText);
+      } else {
+        alert("❌ PIN غير صحيح");
+      }
+    });
+}
 
 function showError(msg) {
   document.getElementById("error").innerText = msg;
   document.getElementById("orderCard").style.display = "none";
 }
-  // قراءة رقم الطلب تلقائياً من الرابط (QR)
-window.onload = function () {
-  const params = new URLSearchParams(window.location.search);
-  const orderId = params.get("orderId");
-
-  if (orderId) {
-    document.getElementById("orderInput").value = orderId;
-    checkOrder();
-  }
-};
-function openAdmin() {
-  const pin = prompt("أدخل PIN المسوؤل:");
-  if (!pin) return;
-
-  // PIN ثابت
-  if (pin === "1234") {
-    const orderId = document.getElementById("o_id").innerText;
-  window.location.href =
-  "https://hashtaqb-eng.github.io/hashtagblackqrcodecheack/update-status.html"
-  + "?orderId=" + encodeURIComponent(orderId)
-  + "&pin=" + pin;
-  } else {
-    alert("❌ PIN غير صحيح");
-  }
-}
 </script>
 
 </body>
 </html>
-
-
-
-
-
