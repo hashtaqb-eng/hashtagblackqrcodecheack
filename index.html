@@ -203,35 +203,41 @@ function renderActions(order) {
   const box = document.getElementById("actions");
   box.innerHTML = "";
 
+  // زر الدفع
   if (!order.status.includes("مدفوع")) {
     const payBtn = document.createElement("button");
     payBtn.className = "action-btn pay";
     payBtn.innerText = "💳 إتمام الدفع";
-  payBtn.onclick = () => {
-  const uniqueRef = order.orderId + "-" + Date.now();
-  window.location.href = `${API_URL}?action=payment&orderId=${uniqueRef}&baseOrder=${order.orderId}&amount=${order.total}`;
-};
+    payBtn.onclick = () => {
+      const uniqueRef = order.orderId + "-" + Date.now();
+      window.location.href =
+        `${API_URL}?action=payment&orderId=${uniqueRef}&baseOrder=${order.orderId}&amount=${order.total}`;
+    };
     box.appendChild(payBtn);
   }
 
+  // زر واتساب
   const wa = document.createElement("button");
   wa.className = "action-btn whatsapp";
   wa.innerText = "💬 واتساب";
   wa.onclick = () => {
-window.open(
-  `https://wa.me/96877586062?text=مرحبا، بخصوص الطلب رقم ${order.orderId}`,
-  "_blank"
-);
+    const phone = "96877586062";
+    const message = `مرحبا، بخصوص الطلب رقم ${order.orderId}`;
+    window.open(
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  };
+  box.appendChild(wa);
 
-
+  // زر اتصال
   const call = document.createElement("button");
   call.className = "action-btn call";
   call.innerText = "📞 اتصال";
   call.onclick = () => window.location.href = "tel:+96877586062";
-
-  box.appendChild(wa);
   box.appendChild(call);
 }
+
 
 function showError(msg) {
   document.getElementById("error").innerText = msg;
@@ -266,6 +272,7 @@ function openAdmin() {
 
 </body>
 </html>
+
 
 
 
