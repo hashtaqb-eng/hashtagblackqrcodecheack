@@ -71,38 +71,41 @@ button {
 </div>
 
 <script>
-const API ="https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";  
+const API = "https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";
 
 const params = new URLSearchParams(window.location.search);
 const orderId = params.get("orderId");
-const pin = params.get("pin");
 
-// حماية PIN
-if (pin !== "1234") {
-  document.body.innerHTML =
-    "<h2 style='color:red;text-align:center'>🚫 دخول غير مصرح</h2>";
-  throw new Error("UNAUTHORIZED");
+if (!orderId) {
+  document.body.innerHTML = "<h2 style='color:red;text-align:center'>❌ رقم الطلب غير موجود</h2>";
+  throw new Error("NO_ORDER_ID");
 }
 
-document.getElementById("orderInfo").innerText =
-  orderId ? "رقم الطلب: " + orderId : "لا يوجد رقم طلب";
+document.getElementById("orderInfo").innerText = "رقم الطلب: " + orderId;
 
 function updateStatus() {
   const status = document.getElementById("status").value;
-
-  if (!orderId || !status) {
+  if (!status) {
     alert("يرجى اختيار الحالة");
     return;
   }
 
+  // طلب PIN المسؤول من المستخدم
+  const pin = prompt("🔒 أدخل PIN المسؤول:");
+  if (!pin) return; // إذا ضغط المستخدم إلغاء
+
+  // إرسال الطلب مع PIN للتحقق في السيرفر فقط
   fetch(`${API}?action=updateStatus&orderId=${encodeURIComponent(orderId)}&status=${encodeURIComponent(status)}&pin=${encodeURIComponent(pin)}`)
     .then(r => r.json())
     .then(data => {
-      document.getElementById("msg").innerText =
-        data.success ? "✅ تم تحديث الحالة بنجاح" : "❌ " + data.message;
+      if (data.success) {
+        document.getElementById("msg").innerText = "✅ تم تحديث الحالة بنجاح";
+      } else {
+        document.getElementById("msg").innerText = "❌ " + (data.message || "فشل التحديث");
+      }
     })
     .catch(() => {
-      document.getElementById("msg").innerText = "⚠️ خطأ في الاتصال";
+      document.getElementById("msg").innerText = "⚠️ خطأ في الاتصال بالسيرفر";
     });
 }
 </script>
