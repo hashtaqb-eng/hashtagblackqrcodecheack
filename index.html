@@ -144,17 +144,29 @@ button {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";
 
-// إظهار زر المسؤول بالضغط المطوّل على العنوان
+// دعم الضغط المطوّل للماوس واللمس
 let pressTimer;
 const title = document.getElementById("title");
 
-title.addEventListener("mousedown", () => {
+function startPressTimer() {
   pressTimer = setTimeout(() => {
     document.getElementById("adminBtn").style.display = "block";
   }, 3000);
-});
-title.addEventListener("mouseup", () => clearTimeout(pressTimer));
-title.addEventListener("mouseleave", () => clearTimeout(pressTimer));
+}
+
+function cancelPressTimer() {
+  clearTimeout(pressTimer);
+}
+
+// أحداث الماوس
+title.addEventListener("mousedown", startPressTimer);
+title.addEventListener("mouseup", cancelPressTimer);
+title.addEventListener("mouseleave", cancelPressTimer);
+
+// أحداث اللمس
+title.addEventListener("touchstart", startPressTimer);
+title.addEventListener("touchend", cancelPressTimer);
+title.addEventListener("touchcancel", cancelPressTimer);
 
 function checkOrder() {
   const id = document.getElementById("orderInput").value.trim();
@@ -239,4 +251,3 @@ function showError(msg) {
 
 </body>
 </html>
-
