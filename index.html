@@ -143,6 +143,20 @@ button {
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyE96Kn9qqPLdUm6iC2n7QPfMryGXYFB8GSdVCDSmBbZzsO7iMyIfZhsTTERD_Y_-pf1Q/exec";
+  
+/* ====== دعم QR ====== */
+const urlParams = new URLSearchParams(window.location.search);
+const scannedOrderId = urlParams.get("orderId");
+
+if (scannedOrderId) {
+  const input = document.getElementById("orderInput");
+  input.value = scannedOrderId;
+
+  // تأخير بسيط لضمان تحميل الصفحة
+  setTimeout(() => {
+    checkOrder();
+  }, 300);
+}
 
 // دعم الضغط المطوّل للماوس واللمس
 let pressTimer;
@@ -251,3 +265,4 @@ function showError(msg) {
 
 </body>
 </html>
+
